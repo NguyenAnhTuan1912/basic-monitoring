@@ -18,7 +18,7 @@ import { sampleRoutes } from "./routes/sample";
 // import { pcustomersRoutes } from "./routes/pcustomer-management";
 
 // Monitoring
-import { PrometheusClient } from "src/core/monitoring/PrometheusClient";
+import { promClient } from "src/core/monitoring";
 
 // Logger
 import { LoggerBuilder } from "src/utils/logger/index.js";

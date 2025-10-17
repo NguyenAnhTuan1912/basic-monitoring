@@ -1,15 +1,43 @@
-import { PrometheusClient } from "src/core/monitoring/PrometheusClient";
+import {
+  totalRequestCollector,
+  totalRequestStatusCollector,
+  concurrentRequestsCollector,
+} from "src/core/monitoring";
 
 // Import types
 import type { Request, Response, NextFunction } from "express";
 
-const promClient = new PrometheusClient();
-const requestCollector = PrometheusClient.createRequestCollector(promClient);
+const excludeURLs = ["/metrics", "/health", "/api-docs", "/.well-known"];
 
-const excludeURLs = new Map([
-  ["/metrics", true],
-  ["/health", true],
-]);
+// Reset request counter
+
+/**
+ * Create new handler for finish event of response.
+ *
+ * @param req
+ * @param res
+ * @returns - finish event handler
+ */
+function createWhenFinishHandler(req: Request, res: Response) {
+  const handle = function () {
+    // Collect when finish
+    // Collect request count
+    totalRequestCollector.inc({ method: req.method, route: req.originalUrl });
+
+    // Collect status count
+    totalRequestStatusCollector.inc({ status_code: res.statusCode });
+
+    // Decrease concurrent request
+    concurrentRequestsCollector.dec({
+      method: req.method,
+      route: req.originalUrl,
+    });
+
+    res.off("finish", handle);
+  };
+
+  return handle;
+}
 
 /**
  * Collect all requests from user, exclude urls in blacklist.
@@ -23,12 +51,18 @@ export function middleware_collectRequest(
   res: Response,
   next: NextFunction,
 ) {
-  if (excludeURLs.get(req.originalUrl)) {
+  if (excludeURLs.some((url) => req.originalUrl.startsWith(url))) {
     return next();
   }
 
-  res.on("finish", () => {
-    requestCollector.inc({ method: req.method, route: req.originalUrl });
+  // Collect in the beginning of request
+  // Increase concurrent request
+  concurrentRequestsCollector.inc({
+    method: req.method,
+    route: req.originalUrl,
   });
+
+  res.on("finish", createWhenFinishHandler(req, res));
+
   next();
 }
