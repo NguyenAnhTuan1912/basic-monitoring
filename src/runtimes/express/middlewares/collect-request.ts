@@ -9,7 +9,9 @@ import type { Request, Response, NextFunction } from "express";
 
 const excludeURLs = ["/metrics", "/health", "/api-docs", "/.well-known"];
 
-// Reset request counter
+function getRoute(req: Request) {
+  return req.route ? req.route.path : req.path;
+}
 
 /**
  * Create new handler for finish event of response.
@@ -22,7 +24,7 @@ function createWhenFinishHandler(req: Request, res: Response) {
   const handle = function () {
     // Collect when finish
     // Collect request count
-    totalRequestCollector.inc({ method: req.method, route: req.originalUrl });
+    totalRequestCollector.inc({ method: req.method, route: getRoute(req) });
 
     // Collect status count
     totalRequestStatusCollector.inc({ status_code: res.statusCode });
@@ -59,7 +61,7 @@ export function middleware_collectRequest(
   // Increase concurrent request
   concurrentRequestsCollector.inc({
     method: req.method,
-    route: req.originalUrl,
+    route: getRoute(req),
   });
 
   res.on("finish", createWhenFinishHandler(req, res));

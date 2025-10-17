@@ -25,12 +25,9 @@ import { LoggerBuilder } from "src/utils/logger/index.js";
 
 // Middlewares
 import { middleware_collectRequest } from "./middlewares/collect-request";
+import { middleware_logRequest } from "./middlewares/log-request";
 
 const app = express();
-const reqLogger = new LoggerBuilder()
-  .to("requests")
-  .to("requests.error", { level: "error" })
-  .build();
 
 // Add global middlewares
 app.use(
@@ -40,45 +37,8 @@ app.use(
 );
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(middleware_collectRequest);
-
-// Inject global middleware for logging
-app.use((req, res, next) => {
-  const start = Date.now();
-
-  res.on("finish", () => {
-    const userAgent = req.headers["user-agent"] || "Unknown";
-    const duration = Date.now() - start;
-    const statusCode = res.statusCode;
-
-    let msg: string;
-
-    if (statusCode >= 400) {
-      msg = `${chalk.yellow(req.method)} ${req.originalUrl} - ${chalk.red(statusCode)} ${duration}ms ${userAgent}`;
-
-      reqLogger.error(
-        LoggerBuilder.buildNormalLog(msg, {
-          userAgent,
-          duration,
-          statusCode,
-        }),
-      );
-    } else {
-      msg = `${chalk.yellow(req.method)} ${req.originalUrl} - ${chalk.green(statusCode)} ${duration}ms ${userAgent}`;
-
-      reqLogger.info(
-        LoggerBuilder.buildNormalLog(msg, {
-          userAgent,
-          duration,
-          statusCode,
-        }),
-      );
-    }
-  });
-
-  next();
-});
+app.use(middleware_logRequest);
 
 // Register routes
 registerRoutes(app, sampleRoutes, swaggerDoc);
