@@ -22,31 +22,26 @@ import type {
 
 export class PrometheusClient extends MetricServiceClient<Registry> {
   static Registry = new Registry();
+  static isCollecting = false;
 
   constructor() {
     super();
   }
 
   init() {
+    if (PrometheusClient.isCollecting) {
+      return;
+    }
+
     PrometheusClient.Registry.setDefaultLabels({
       service: Configs.ServiceName,
     });
 
-    collectDefaultMetrics({ register: PrometheusClient.Registry });
-  }
-
-  /**
-   * Create request collector (counter).
-   *
-   * @param instance
-   * @returns counter collector
-   */
-  static createRequestCollector(instance: PrometheusClient) {
-    return instance.createCounter({
-      name: "http_requests_total",
-      help: "Total of request per route and method",
-      labelNames: ["method", "route"],
+    collectDefaultMetrics({
+      prefix: `${Configs.ServiceName}_`,
+      register: PrometheusClient.Registry,
     });
+    PrometheusClient.isCollecting = true;
   }
 
   createCounter(params: TPrometheusCounterParams) {
