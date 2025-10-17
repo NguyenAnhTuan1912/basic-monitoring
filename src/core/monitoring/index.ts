@@ -21,6 +21,9 @@ export const totalRequestStatusCollector = promClient.createCounter(
 export const concurrentRequestsCollector = promClient.createGauge(
   promMetricConfig.httpConcurrentRequests.config,
 );
+export const requestDurationSecondsCollector = promClient.createSummary(
+  promMetricConfig.httpRequestDurationSeconds.config,
+);
 
 // Setup cronjob
 const RESET_VALUE = 0;

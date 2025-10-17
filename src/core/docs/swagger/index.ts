@@ -9,9 +9,9 @@ const options = {
   definition: {
     openapi: "3.0.0",
     info: {
-      title: "Database Optimization",
+      title: "Sample Monitorable Application",
       version: "1.0.0",
-      description: "Tài liệu API cho Database Optimization",
+      description: "Tài liệu API cho SMA",
     },
     components: {
       parameters: {
