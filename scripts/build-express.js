@@ -15,5 +15,7 @@ esbuild
     tsconfig: TSCONFIG_FILE,
     platform: "node",
     sourcemap: true,
+
+    external: ["swagger-ui-express", "swagger-ui-dist"],
   })
   .catch(() => process.exit(1));
