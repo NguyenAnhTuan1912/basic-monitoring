@@ -32,7 +32,7 @@ function createWhenFinishHandler(req: Request, res: Response) {
     // Decrease concurrent request
     concurrentRequestsCollector.dec({
       method: req.method,
-      route: req.originalUrl,
+      route: getRoute(req),
     });
 
     res.off("finish", handle);

@@ -18,7 +18,7 @@ import { ExpressRuntimeContext } from "src/runtimes/express/adapters/context";
 import type { TSwaggerRouteDefinition } from "src/core/docs/swagger/type";
 
 // Tag for Swagger UI grouping
-export const sampleTag = "Sample Fun Pipelines";
+export const sampleTag = "Fun sample routes";
 
 /**
  * Các route vui vẻ dành cho dev 😆
@@ -112,7 +112,7 @@ export const sampleRoutes: Array<TSwaggerRouteDefinition> = [
   // 🐱 Cat translator
   {
     method: "post",
-    path: "/sample/cat-translator",
+    path: "/sample/to-meow",
     handler: async (req, res, next) => {
       const ctx = new ExpressRuntimeContext(req, res, next);
       return await catTranslatorPipeline.run(ctx);

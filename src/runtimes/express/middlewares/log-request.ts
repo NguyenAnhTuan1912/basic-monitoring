@@ -4,6 +4,7 @@ import { requestDurationSecondsCollector } from "src/core/monitoring";
 
 // Import utils
 import { LoggerBuilder } from "src/utils/logger";
+import * as NumberUtils from "src/utils/number";
 
 // Import types
 import type { Request, Response, NextFunction } from "express";
@@ -29,14 +30,15 @@ function createWhenFinishHandler(
 
   const handle = function () {
     const userAgent = req.headers["user-agent"] || "Unknown";
-    const duration = performance.now() - start;
+    const duration = NumberUtils.roundTo(performance.now() - start, 3);
     const statusCode = res.statusCode;
+    const durationTxt = `${duration}`.padEnd(5, "0");
 
     let msg: string;
 
     // Log
     if (statusCode >= 400) {
-      msg = `${chalk.yellow(req.method)} ${req.originalUrl} - ${chalk.red(statusCode)} ${duration}ms ${userAgent}`;
+      msg = `${chalk.yellow(req.method)} ${req.originalUrl} - ${chalk.red(statusCode)} ${durationTxt}ms ${userAgent}`;
 
       reqLogger.error(
         LoggerBuilder.buildNormalLog(msg, {
@@ -46,7 +48,7 @@ function createWhenFinishHandler(
         }),
       );
     } else {
-      msg = `${chalk.yellow(req.method)} ${req.originalUrl} - ${chalk.green(statusCode)} ${duration}ms ${userAgent}`;
+      msg = `${chalk.yellow(req.method)} ${req.originalUrl} - ${chalk.green(statusCode)} ${durationTxt}ms ${userAgent}`;
 
       reqLogger.info(
         LoggerBuilder.buildNormalLog(msg, {
@@ -59,7 +61,9 @@ function createWhenFinishHandler(
 
     // Collect http request duration second
     // Convert duration (ms) to s
-    requestDurationSecondsCollector.observe(duration / 1000);
+    requestDurationSecondsCollector.observe(
+      NumberUtils.roundTo(duration / 1000, 3),
+    );
 
     res.off("finish", handle);
   };
