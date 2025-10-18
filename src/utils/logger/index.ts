@@ -106,14 +106,18 @@ export class LoggerBuilder {
             winston.format.timestamp(),
             winston.format.errors({ stack: true }), // để log cả stack trace
             winston.format.printf(({ level, message, timestamp, ...meta }) => {
+              let maxLength = 5;
+
               if (level.toLowerCase() === "info") {
-                level = chalk.blueBright(level);
+                level = chalk.blueBright(`${level.padEnd(maxLength, " ")}`);
               } else if (level.toLowerCase() === "warn") {
-                level = chalk.yellowBright(level);
+                level = chalk.yellowBright(`${level.padEnd(maxLength, " ")}`);
               } else if (level.toLowerCase() === "error") {
                 level = chalk.redBright(level);
               } else if (level.toLowerCase() === "debug") {
                 level = chalk.bgWhite(chalk.black(level));
+              } else if (level.toLowerCase() === "fatal") {
+                level = chalk.bgRed(chalk.black(level));
               }
 
               return `${chalk.yellow(new Date(timestamp as string).toLocaleString())} [${level}]: ${message}`;
